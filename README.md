@@ -1,3 +1,10 @@
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)
+![License](https://img.shields.io/badge/license-Private-red)
+![Streamlit](https://img.shields.io/badge/Built%20With-Streamlit-ff4b4b)
+![ML Model](https://img.shields.io/badge/Model-RandomForest-green)
+![Status](https://img.shields.io/badge/status-MVP%20Complete-brightgreen)
+
+
 # 🌾 MavunoWatch - AI-Powered Kenyan Agricultural Intelligence System
 
 **MavunoWatch** is an AI-driven food production monitoring and prediction system tailored for Kenya's counties. Built by [Geddy Wendot](https://github.com/Geddy-Wendot) under **Trivium Technology Group**, this MVP forecasts crop yield trends, detects food production risks, and empowers policy-makers and farmers with actionable intelligence.
@@ -13,6 +20,10 @@
 - 🖥️ Interactive dashboard via Streamlit
 - ✅ Fully modular and reproducible architecture
 
+
+## 🖼️ Dashboard Preview
+
+![Dashboard Screenshot](.Screenshot 2025-06-20 194404.png/)
 
 
 ## 📦 Folder Structure
