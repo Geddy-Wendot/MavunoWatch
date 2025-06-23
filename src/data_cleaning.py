@@ -7,6 +7,9 @@ import numpy as np
 def clean_data(file_path_or_buffer):
     df = pd.read_csv(file_path_or_buffer)
 
+   
+
+
     # 🧠 Show what countries are present
     if "country" in df.columns:
         print("🧠 Available countries:", df["country"].unique())
@@ -22,7 +25,8 @@ def clean_data(file_path_or_buffer):
         "harvest_year": "year",
         "area": "area_ha",
         "production": "production_tons"
-    })
+    }) 
+    df = df[df["year"] >= 2010]
 
     # 🚫 Replace junk values with NaN
     df = df.replace(
