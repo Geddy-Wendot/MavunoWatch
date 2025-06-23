@@ -2,27 +2,54 @@
 # Unauthorized use, reproduction, or modification is strictly prohibited.
 
 import pandas as pd
+import numpy as np
 
-def clean_data(filepath):
-    """
-    Loads, cleans, and engineers features from the food production dataset.
+def clean_data(file_path_or_buffer):
+    df = pd.read_csv(file_path_or_buffer)
 
-    Args:
-        filepath (str): Path to the CSV file.
+    # 🧠 Show what countries are present
+    if "country" in df.columns:
+        print("🧠 Available countries:", df["country"].unique())
+        df = df[df["country"].str.lower() == "kenya"]
 
-    Returns:
-        pd.DataFrame: Cleaned and feature-engineered dataframe.
-    """
-    # Load data
-    df = pd.read_csv(filepath)
+    # 🧽 Clean up column names
+    df.columns = df.columns.str.strip().str.lower()
 
-    # Normalize column names
-    df.columns = [col.strip().lower().replace(" ", "_") for col in df.columns]
+    # 🧱 Rename for consistency
+    df = df.rename(columns={
+        "admin_1": "county",
+        "product": "crop",
+        "harvest_year": "year",
+        "area": "area_ha",
+        "production": "production_tons"
+    })
 
-    # Drop rows with missing values (can later be replaced with smarter imputation)
-    df.dropna(inplace=True)
+    # 🚫 Replace junk values with NaN
+    df = df.replace(
+        ["none", "None", "N/A", "n/a", "NaN", "null", "", " ", "All (PS)", "TBD", "x", "-", "—"],
+        np.nan
+    ).infer_objects(copy=False)
 
-    # Feature engineering: yield per hectare
-    df['yield_ton_per_ha'] = df['production_tons'] / df['area_ha']
+    # 🩺 Keep only valid rows
+    critical_cols = ["year", "area_ha", "production_tons", "crop"]
+    df.dropna(subset=critical_cols, inplace=True)
+
+    # 🔢 Convert numerics
+    df["year"] = pd.to_numeric(df["year"], errors="coerce")
+    df["area_ha"] = pd.to_numeric(df["area_ha"], errors="coerce")
+    df["production_tons"] = pd.to_numeric(df["production_tons"], errors="coerce")
+
+    # 🚧 Drop any remaining invalid rows
+    df.dropna(subset=["year", "area_ha", "production_tons"], inplace=True)
+
+    # 🚫 Remove rows with area = 0 to prevent division errors
+    df = df[df["area_ha"] > 0]
+
+    # 📐 Feature engineering
+    df["yield_ton_per_ha"] = df["production_tons"] / df["area_ha"]
+
+    # ✅ Final sanity check
+    if df.empty:
+        raise ValueError("❌ No data available after cleaning. Check for invalid values in dataset.")
 
     return df
