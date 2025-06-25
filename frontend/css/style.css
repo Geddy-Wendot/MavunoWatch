@@ -1,0 +1,156 @@
+/* General Reset and Body Styling */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f6f9;
+  color: #222;
+  line-height: 1.6;
+  padding-bottom: 50px;
+}
+
+/* Navbar Styling */
+nav {
+  background: #2e8b57;
+  padding: 15px 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+nav ul {
+  display: flex;
+  list-style: none;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+nav ul li {
+  margin: 0 15px;
+}
+
+nav ul li a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1.1rem;
+  transition: color 0.3s;
+}
+
+nav ul li a:hover {
+  color: #d4f8d4;
+}
+
+/* Header Styling */
+header {
+  text-align: center;
+  padding: 30px 20px;
+  background: linear-gradient(to right, #2e8b57, #1c5b3b);
+  color: white;
+  margin-bottom: 20px;
+}
+
+header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+header p {
+  font-size: 1.2rem;
+}
+
+/* Section Containers */
+main section {
+  background: #ffffff;
+  margin: 20px auto;
+  padding: 25px;
+  border-radius: 8px;
+  max-width: 800px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+section h2 {
+  margin-bottom: 20px;
+  color: #2e8b57;
+  font-size: 1.5rem;
+}
+
+/* Forms */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+form label {
+  font-weight: bold;
+}
+
+form select,
+form input[type="number"],
+form button {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+form button {
+  background-color: #2e8b57;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+form button:hover {
+  background-color: #246b45;
+}
+
+/* Prediction Result & Notes */
+#prediction-result,
+#trendNote {
+  margin-top: 15px;
+  padding: 15px;
+  border-radius: 6px;
+  background-color: #e9f7ec;
+  color: #1b4d3e;
+  font-weight: bold;
+}
+
+.warning {
+  background-color: #ffe0e0;
+  color: #900;
+  padding: 10px;
+  border-left: 4px solid #d00;
+  border-radius: 5px;
+}
+
+.info {
+  background-color: #d0f0ff;
+  color: #005b8a;
+  padding: 10px;
+  border-left: 4px solid #009fdc;
+  border-radius: 5px;
+}
+
+/* Canvas Responsiveness */
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 20px;
+  background: #2e8b57;
+  color: white;
+  position: relative;
+  bottom: 0;
+  width: 100%;
+  margin-top: 50px;
+}

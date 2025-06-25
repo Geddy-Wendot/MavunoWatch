@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MavunoWatch | Crop Yield Dashboard</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <nav>
+    <ul>
+      <li><a href="index.html">🏠 Home</a></li>
+      <li><a href="map.html">🗺️ Map</a></li>
+      <li><a href="about.html">ℹ️ About</a></li>
+    </ul>
+  </nav>
+
+  <header>
+    <h1>🌾 MavunoWatch</h1>
+    <p>AI-Powered Kenyan Crop Yield Intelligence System</p>
+  </header>
+
+  <main>
+    <!-- PREDICTION SECTION -->
+    <section id="predict-section">
+      <h2>🔍 Predict Crop Yield</h2>
+      <form id="predict-form">
+        <label for="predict-county">County:</label>
+        <select id="predict-county" required></select>
+
+        <label for="predict-crop">Crop:</label>
+        <select id="predict-crop" required></select>
+
+        <label for="area">Land Area (Ha):</label>
+        <input type="number" id="area" value="10" min="1" required />
+
+        <label for="predict-year">Year:</label>
+        <input type="number" id="predict-year" value="2025" min="2020" max="2030" required />
+        <p>Note: Predictions are based on historical data and AI models.</p>
+        <p>Ensure you select the correct year for accurate predictions.</p>
+
+        <button type="submit">Predict</button>
+      </form>
+      <div id="prediction-result"></div>
+    </section>
+
+    <!-- TREND SECTION -->
+    <section id="trend-section">
+      <h2>📈 Historical Yield Trend</h2>
+      <form id="trendForm">
+        <label for="trend-county">County:</label>
+        <select id="trend-county" required></select>
+
+        <label for="trend-crop">Crop:</label>
+        <select id="trend-crop" required></select>
+
+        <button id="fetch-trend" type="submit">Show Trend</button>
+      </form>
+
+      <canvas id="trendChart" width="500" height="300"></canvas>
+      <p id="trendNote"></p>
+    </section>
+
+    <!-- MAP SECTION -->
+     <section id="map-section">
+      <h2>🗺️ County Yield Map</h2>
+      <iframe src="http://localhost:8501" width="100%" height="500" frameborder="0"></iframe>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 Geddy Wendot / Trivium Technology Group. All rights reserved.</p>
+  </footer>
+
+  <!-- JS SCRIPT -->
+ <!-- Only showing the FIXED parts of the script section -->
+  <script src="frontend/js/app.js"></script>
+  <script>
+    // Populate year dropdown (current to +5 years)
+    const yearSelect = document.getElementById("year");
+    const currentYear = new Date().getFullYear();
+    for (let i = 0; i <= 5; i++) {
+      const y = currentYear + i;
+      yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
+    }
+  </script>
+
+<script>
+  const predictCounty = document.getElementById("predict-county");
+  const predictCrop = document.getElementById("predict-crop");
+  const trendCounty = document.getElementById("trend-county");
+  const trendCrop = document.getElementById("trend-crop");
+
+  const predictionForm = document.getElementById("predict-form");
+  const predictionResult = document.getElementById("prediction-result");
+
+  const trendForm = document.getElementById("trendForm");
+  const trendCanvasEl = document.getElementById("trendChart");  // Fix 1
+  const trendNote = document.getElementById("trendNote");
+
+  let allCrops = [];
+  let trendChart = null;
+
+  async function loadMetadata() {
+    try {
+      const res = await fetch("http://127.0.0.1:5000/metadata");
+      const data = await res.json();
+
+      data.counties.forEach(c => {
+        predictCounty.innerHTML += `<option value="${c}">${c}</option>`;
+        trendCounty.innerHTML += `<option value="${c}">${c}</option>`;
+      });
+
+      data.crops.forEach(c => {
+        predictCrop.innerHTML += `<option value="${c}">${c}</option>`;
+        trendCrop.innerHTML += `<option value="${c}">${c}</option>`;
+      });
+
+      allCrops = data.crops;
+    } catch (err) {
+      alert("Failed to load metadata: " + err.message);
+    }
+  }
+
+predictionForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  
+  const county = predictCounty.value;
+  const crop = predictCrop.value;
+  const area = parseFloat(document.getElementById("area").value);
+  const year = parseInt(document.getElementById("predict-year").value);
+
+  const res = await fetch("http://127.0.0.1:5000/predict", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      year: year,  // 🛠️ Respect the selected year
+      area_ha: area,
+      crop,
+      all_crops: allCrops
+    })
+  });
+
+  const result = await res.json();
+
+  if (res.ok) {
+    predictionResult.innerHTML = `
+      <p>🌾 For <strong>${crop}</strong> in <strong>${county}</strong> during <strong>${year}</strong>, 
+      the predicted yield is: <strong>${result.predicted_yield} tons/ha</strong>.</p>`;
+  } else {
+    predictionResult.innerHTML = `<p style="color:red;">❌ Error: ${result.error}</p>`;
+  }
+});
+
+
+  trendForm.addEventListener("submit", async e => {
+    e.preventDefault();
+
+    const county = trendCounty.value;
+    const crop = trendCrop.value;
+
+    try {
+      const res = await fetch("http://127.0.0.1:5000/trend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ county, crop })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        trendNote.textContent = "❌ " + (data.error || "Server error.");
+        return;
+      }
+
+      const years = data.trend.map(item => item.year);
+      const yields = data.trend.map(item => item.yield);
+
+      if (trendChart) trendChart.destroy();  // Fix 2: use global chart object
+      trendChart = new Chart(trendCanvasEl.getContext("2d"), {
+        type: 'line',
+        data: {
+          labels: years,
+          datasets: [{
+            label: `Yield Trend for ${crop} in ${county}`,
+            data: yields,
+            borderColor: "green",
+            backgroundColor: "rgba(0,128,0,0.2)",
+            fill: true,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true }
+          }
+        }
+      });
+
+      trendNote.textContent = data.trend_note;
+
+    } catch (err) {
+      trendNote.textContent = "❌ Error fetching trend data: " + err.message;
+    }
+  });
+
+  loadMetadata();
+</script>
+
+</body>
+</html>
