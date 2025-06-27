@@ -37,6 +37,8 @@ if uploaded_file:
             model = joblib.load("models/trained_model.pkl")
             st.sidebar.success("✅ AI model loaded!")
 
+
+
             # --- Prediction ---
             st.header("🔍 Predict Crop Yield")
             county = st.selectbox("County", sorted(df["county"].unique()))
@@ -45,28 +47,38 @@ if uploaded_file:
             area_ha = st.number_input("Land Area (Ha)", min_value=1.0, value=10.0)
             year = datetime.now().year
 
-            input_data = {"year": year, "area_ha": area_ha}
+            if os.path.exists("models/base_year.txt"):
+                with open("models/base_year.txt") as f:
+                    base_year = int(f.read().strip())
+            else:
+                base_year = 2000  # fallback, but should not happen
+
+            input_data = {"year_since_start": year - base_year, "area_ha": area_ha}
             for c in df["crop"].unique():
                 input_data[f"crop_{c}"] = 1 if c == crop else 0
             model_features = model.feature_names_in_
             input_df = pd.DataFrame([input_data])[model_features]
             prediction = model.predict(input_df)[0]
+            
+            
+            
+
             st.success(f"🌽 Estimated Yield for {crop} in {county} ({year}): **{round(prediction, 2)} tons/ha**")
 
             # --- Best Crop ---
             st.subheader("🏆 Best-Performing Crop Recommendation")
             best_preds = []
+            
             for c in crops:
-                row = {"year": year, "area_ha": area_ha}
+                row= {"year_since_start": year - base_year, "area_ha": area_ha}
                 for k in df["crop"].unique():
                     row[f"crop_{k}"] = 1 if k == c else 0
                 try:
                     row_df = pd.DataFrame([row])[model_features]
-                    yield_val = model.predict(row_df)[0]
+                    yield_val= model.predict(row_df)[0]
                     best_preds.append((c, yield_val))
-                except Exception:
-                    continue
-
+                except Exception :
+                    continue        
             if best_preds:
                 sorted_df = pd.DataFrame(best_preds, columns=["Crop", "Predicted Yield"]).sort_values(by="Predicted Yield", ascending=False)
                 top_crop = sorted_df.iloc[0]
